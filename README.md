@@ -54,17 +54,18 @@ ray start --address=ravi-MSI.local:6380
 ray status
 
 ```
-* In the main laptop, login to hugginface since our model would be pulled from there.
+* In the main laptop, log in to hugginface since our model would be pulled from there.
 ```sh
 pip install --upgrade huggingface_hub
 huggingface-cli login
 
 ```
 
-* Run the command to start an inference server which would use both the available GPUs
+* Run the command to start an inference server, which would use both the available GPUs. Make sure to download the models at both the nodes as mentioned [here](https://docs.vllm.ai/en/v0.5.1/serving/distributed_serving.html)
+Note -> I have kept dtype float16 since MX150 wont support bfloat16 
 
 ```sh
-python -m vllm.entrypoints.openai.api_server   --model meta-llama/Llama-3.2-1B-Instruct --tensor-parallel-size 1   --swap-space 2 --dtype float16
+python -m vllm.entrypoints.openai.api_server --model facebook/opt-125m --tensor-parallel-size 2   --swap-space 2 --dtype float16
 ```
 
 * Test out inference by
@@ -72,7 +73,7 @@ python -m vllm.entrypoints.openai.api_server   --model meta-llama/Llama-3.2-1B-I
 curl http://localhost:8000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "meta-llama/Llama-3.2-1B-Instruct",
+    "model": "facebook/opt-125m",
     "messages": [{"role": "user", "content": "Tell me a joke."}],
     "temperature": 0.7
   }'
